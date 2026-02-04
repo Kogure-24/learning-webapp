@@ -1,0 +1,9 @@
+<h1>図書リクエスト一覧</h1>
+<ul>
+    {% for book in book_requests %}
+    <li>{{ book.title }} / {{ book.author }} / {{ book.requester }}</li>
+    {% else %}
+    <li>申請はまだありません</li>
+    {% endfor %}
+</ul>
+<a href="{{ url_for('index') }}">ホームに戻る</a>

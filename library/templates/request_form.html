@@ -1,0 +1,15 @@
+<h1>図書リクエスト</h1>
+<form method="POST">
+    <label>書籍タイトル</label>
+    <input type="text" name="title" required>
+    <br>
+    <label>著者名</label>
+    <input type="text" name="author" required>
+    <br>
+    <label>申請者名</label>
+    <input type="text" name="requester" required>
+    <br>
+    <button type="submit">申請する</button>
+</form>
+<a href="{{ url_for('index') }}">ホームに戻る</a>
+
