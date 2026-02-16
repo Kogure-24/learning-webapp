@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from flask import Flask, render_template, redirect, url_for, flash, request
-from flask_bootstrap import Bootstrap5
-from forms import LoginForm
 from flask import session, redirect, url_for, flash
-from models import db, User
+from flask_bootstrap import Bootstrap5
+from forms import BookRequestForm,LoginForm
+from models import BookRequest,db, User
 from werkzeug.security import check_password_hash
 
 
@@ -14,9 +14,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 Bootstrap5(app)
 db.init_app(app)
-
-# with app.app_context():
-#     db.create_all()
 
 
 # ----- ログインルート -----
@@ -42,21 +39,37 @@ def login():
             flash("ユーザーIDまたはパスワードが間違っています", "danger")
     return render_template("login.html", form=form)
 
+# ----- ログアウト -----
+@app.route("/logout", methods=["POST"])
+def logout():
+    # セッションからログイン情報を削除
+    session.clear()
+
+    # ログインページへリダイレクト
+    return redirect(url_for("login"))
+
 # ----- ホーム画面 -----
 @app.route('/')
 def index():
-    if not session.get("user_id"):
+    user_id = session.get("user_id")
+    if not user_id:
         return redirect(url_for("login"))
+    current_user = User.query.get(user_id)
+    
     today = datetime.now().strftime("%Y年%m月%d日")
     return_deadline = (datetime.now() + timedelta(weeks=2)).strftime("%Y年%m月%d日")
-    username = "tama"
-    return render_template("index.html", today=today, return_deadline=return_deadline, username=username)
+    return render_template(
+        "index.html",
+        today=today,
+        return_deadline=return_deadline,
+        username=current_user.username,)
 
 # ----- 図書リクエスト用のデータ -----
 book_requests = []
 
+
 # ----- 図書リクエスト画面 -----
-@app.route("/request", methods=["GET", "POST"])
+@app.route("/request_book", methods=["GET", "POST"])
 def request_book():
     if request.method == "POST":
         new_request = {
@@ -68,19 +81,45 @@ def request_book():
         return redirect(url_for("request_list"))  # 申請一覧画面へ
     return render_template("request_form.html")
 
+
+
+
+
+# 図書リクエストページ
+@app.route("/request_book", methods=["GET", "POST"])
+def request_book():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+    current_user = User.query.get(user_id)
+
+    form = BookRequestForm()
+
+    if form.validate_on_submit():
+        book_request = BookRequest(
+            title=form.title.data,
+            author=form.author.data,
+            reason=form.reason.data,
+        )
+        db.session.add(book_request)
+        db.session.commit()
+        return redirect(url_for("request_list"))
+    return render_template(
+        "request_form.html", form=form, username=current_user.username
+    )
+
 # ----- 図書リクエスト一覧画面 -----
 @app.route("/request_list")
 def request_list():
-    return render_template("request_list.html", book_requests=book_requests)
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+    current_user = User.query.get(user_id)
+    book_requests = BookRequest.query.all()
+    return render_template(
+        "request_list.html", requests=book_requests, username=current_user.username
+    )
 
-# ----- ログアウト -----
-@app.route("/logout", methods=["POST"])
-def logout():
-    # セッションからログイン情報を削除
-    session.clear()
-
-    # ログインページへリダイレクト
-    return redirect(url_for("login"))
 
 # ----- サーバー起動 -----
 if __name__ == '__main__':
