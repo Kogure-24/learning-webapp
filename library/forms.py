@@ -12,3 +12,12 @@ class BookRequestForm(FlaskForm):
     author = StringField("著者", validators=[DataRequired()])
     reason = TextAreaField("リクエスト理由", validators=[DataRequired()])
     submit = SubmitField("申請する")
+
+# 検索フォーム
+class SearchForm(FlaskForm):
+    search_term = StringField(
+        "タイトルまたは著者",
+        validators=[DataRequired()],
+        render_kw={"placeholder": "キーワードを入力"},
+    )
+    submit = SubmitField("検索")

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>貸出中の書籍</h2>
+
+<ul class="list-group">
+    {% for loan in borrowed_list %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ loan.book.title }}
+
+            <form action="{{ url_for('return_book', loan_id=loan.id) }}" method="post">
+                <button type="submit" class="btn btn-sm btn-danger">返却</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+
+<a href="{{ url_for('index') }}" class="btn btn-primary mt-3">ホームへ戻る</a>
+{% endblock %}
