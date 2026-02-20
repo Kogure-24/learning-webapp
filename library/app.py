@@ -8,16 +8,19 @@ from models import BookRequest, db, User, Book, Loan
 from werkzeug.security import check_password_hash
 from sqlalchemy import or_
 
-
-
+# 1. Flaskアプリを作る
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "SECRET_KEY_FOR_DEVELOPMENT"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///library.db"  # データベース名
+app.config["SECRET_KEY"] = "any-secret-key"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-Bootstrap5(app)
+# 2. 拡張機能を初期化
 db.init_app(app)
+Bootstrap5(app)
 
+# 3. データベースとテーブルを作る
+with app.app_context():
+    db.create_all()
 
 # ----- ログインルート -----
 @app.route("/login", methods=["GET", "POST"])
@@ -51,6 +54,7 @@ def logout():
     # ログインページへリダイレクト
     return redirect(url_for("login"))
 
+
 # ----- ホーム画面 -----
 @app.route("/")
 def index():
@@ -59,8 +63,8 @@ def index():
         return redirect(url_for("login"))
     current_user = User.query.get(user_id)
 
-    today = datetime.now().strftime("%Y年%m月%d日")
-    return_deadline = (datetime.now() + timedelta(weeks=2)).strftime("%Y年%m月%d日")
+    today = datetime.now().strftime("%Y/%-m/%-d (%a)")
+    return_deadline = (datetime.now() + timedelta(weeks=2)).strftime("%Y/%-m/%-d (%a)")
     return render_template(
         "index.html",
         today=today,
@@ -109,8 +113,9 @@ def request_list():
         "request_list.html", requests=book_requests, username=current_user.username
     )
 
+
 # 検索フォーム
-@app.route("/search", methods=["GET","POST"])
+@app.route("/search", methods=["GET", "POST"])
 def search():
     user_id = session.get("user_id")
     if not user_id:
@@ -154,6 +159,7 @@ def borrow(book_id):
     flash(f"「{book.title}」を借りました", "success")
     return redirect(url_for("search"))
 
+
 # 一覧ページ
 @app.route("/borrowed_books")
 def borrowed_books():
@@ -164,8 +170,11 @@ def borrowed_books():
     borrowed_list = Loan.query.filter_by(user=current_user, returned_at=None).all()
 
     return render_template(
-        "borrowed_books.html", borrowed_list=borrowed_list, username=current_user.username
+        "borrowed_books.html",
+        borrowed_list=borrowed_list,
+        username=current_user.username,
     )
+
 
 # 返却処理
 @app.route("/return_book/<int:loan_id>", methods=["POST"])
@@ -186,7 +195,6 @@ def return_book(loan_id):
 
     flash("返却しました", "success")
     return redirect(url_for("borrowed_books"))
-
 
 
 # ----- サーバー起動 -----

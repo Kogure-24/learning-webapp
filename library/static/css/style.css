@@ -1,0 +1,29 @@
+/* style.css 内 */
+body {
+    background-image: url("../image/nyc_pl.jpg");  /* static/css から見た相対パス */
+    background-size: cover;        /* 画面全体に拡大縮小 */
+    background-position: center;   /* 中央に配置 */
+    background-repeat: no-repeat;  /* 繰り返さない */
+    min-height: 100vh;             /* 高さを画面いっぱいにする */
+}
+
+.navbar-custom {
+    background-color: #4B3621;  /* 上品な茶色 */
+}
+
+/* フォント */
+/* style.css に追加 */
+body {
+    font-family: 'Roboto Slab', serif;  /* Google Fonts名 + フォント分類 */
+}
+
+.card-body {
+    font-family: 'Merriweather', serif;
+    color: #3E2723; /* 濃いブラウン */
+}
+
+.card:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    transform: translateY(-3px);
+    transition: 0.3s;
+}
